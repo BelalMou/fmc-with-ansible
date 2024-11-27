@@ -1,0 +1,43 @@
+---
+- name: Configure a new ACL on FMC
+  hosts: all
+  gather_facts: no
+  vars:
+    acess_policy_name: "Turtle"
+    acl_name: "AnsibleACL"
+    acl_action: "DENY"
+    source_network: "any"
+    destination_network: "any"
+    service_protocol: "TCP"
+    service_port: "80"
+
+  tasks:
+  #   - name: Authenticate with FMC
+  #     cisco.fmc.authentication:
+  #       host: "{{ ansible_host }}"
+  #       username: "{{ ansible_user }}"
+  #       password: "{{ ansible_password }}"
+  #       validate_certs: "{{ fmc_validate_certs }}"
+  #     register: fmc_auth
+
+    - name: Add a new access rule to the policy
+      #cisco.fmc.access_rules:
+      cisco.fmcansible.fmc_configuration:
+        host: "{{ ansible_host }}"
+        token: "{{ fmc_auth.token }}"
+        acp_name: "{{ access_policy_name }}"
+        action: "{{ acl_action }}"
+        name: "{{ acl_name }}"
+        source_networks:
+          - value: "{{ source_network }}"
+        destination_networks:
+          - value: "{{ destination_network }}"
+        service:
+          protocol: "{{ service_protocol }}"
+          port: "{{ service_port }}"
+        validate_certs: "{{ fmc_validate_certs }}"
+      register: result
+
+    - name: Display the result
+      debug:
+        var: result
